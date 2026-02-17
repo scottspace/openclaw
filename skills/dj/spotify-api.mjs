@@ -75,7 +75,13 @@ async function api(method, path, body) {
     const txt = await res.text();
     die(`API ${method} ${path} → ${res.status}: ${txt}`);
   }
-  return res.json();
+  const txt = await res.text();
+  if (!txt) return { ok: true };
+  try {
+    return JSON.parse(txt);
+  } catch {
+    return { ok: true, body: txt };
+  }
 }
 
 function deviceParam(args) {
