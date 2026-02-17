@@ -1,0 +1,43 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google/gemini-3-flash",
+        "fallbacks": ["anthropic/claude-sonnet-4-5", "openai/gpt-4o"]
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true
+      }
+    ]
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": { "mode": "token", "provider": "anthropic" }
+    }
+  },
+  "bindings": [
+    {
+      "agentId": "main",
+      "match": { "channel": "discord" }
+    }
+  ],
+  "channels": {
+    "discord": {
+      "enabled": true,
+      "groupPolicy": "allowlist",
+      "guilds": {
+        "1473070241784533012": {
+          "channels": { "general": { "allow": true } },
+          "requireMention": false
+        }
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "auto"
+  }
+}
