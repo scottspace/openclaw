@@ -49,8 +49,17 @@ if [ -d "${WORKSPACE_DIR}/.git" ]; then
   echo "[workspace-boot] fetching latest for ${WORKSPACE_DIR}"
   cd "${WORKSPACE_DIR}"
   git fetch origin --quiet
+elif [ -d "${WORKSPACE_DIR}" ] && [ "$(ls -A "${WORKSPACE_DIR}" 2>/dev/null)" ]; then
+  # Directory exists but isn't a git repo — init and set remote
+  echo "[workspace-boot] existing non-git dir at ${WORKSPACE_DIR}, initializing"
+  cd "${WORKSPACE_DIR}"
+  git init --quiet
+  git remote add origin "${WORKSPACE_REPO}" 2>/dev/null || git remote set-url origin "${WORKSPACE_REPO}"
+  git fetch origin --quiet
+  git checkout -b "${MAIN_BRANCH}" "origin/${MAIN_BRANCH}" --quiet 2>/dev/null || true
 else
   echo "[workspace-boot] cloning ${WORKSPACE_REPO} → ${WORKSPACE_DIR}"
+  mkdir -p "$(dirname "${WORKSPACE_DIR}")"
   git clone "${WORKSPACE_REPO}" "${WORKSPACE_DIR}" --quiet
   cd "${WORKSPACE_DIR}"
 fi
