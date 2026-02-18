@@ -14,7 +14,7 @@ app = "tensorclaw"
   OPENCLAW_AGENT_ID = "main"
 
 [processes]
-  app = "sh -c '/app/scripts/workspace-boot.sh && node fly-proxy.mjs & node dist/index.js gateway --allow-unconfigured --port 3001 --bind lan'"
+  app = "sh -c '/app/scripts/workspace-boot.sh; node fly-proxy.mjs & node dist/index.js gateway --allow-unconfigured --port 3001 --bind lan'"
 
 [http_service]
   internal_port = 3000
