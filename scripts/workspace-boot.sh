@@ -80,10 +80,12 @@ sync_workspace() {
     echo "[workspace-boot] agent will resolve on first sync"
   fi
 
-  # Copy openclaw.json to state dir if workspace has one
+  # Copy openclaw.json to state dir, expanding env placeholders
   if [ -f "${WORKSPACE_DIR}/openclaw.json" ]; then
     OPENCLAW_STATE="${OPENCLAW_STATE_DIR:-/data}"
-    cp "${WORKSPACE_DIR}/openclaw.json" "${OPENCLAW_STATE}/openclaw.json"
+    sed \
+      -e "s|__OPENCLAW_HOOK_TOKEN__|${OPENCLAW_HOOK_TOKEN:-}|g" \
+      "${WORKSPACE_DIR}/openclaw.json" > "${OPENCLAW_STATE}/openclaw.json"
     echo "[workspace-boot] synced openclaw.json → ${OPENCLAW_STATE}/openclaw.json"
   fi
 
