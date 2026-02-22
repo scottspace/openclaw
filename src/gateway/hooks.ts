@@ -1,10 +1,15 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage } from "node:http";
+import { URLSearchParams } from "node:url";
 import { listAgentIds, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { listChannelPlugins } from "../channels/plugins/index.js";
 import type { ChannelId } from "../channels/plugins/types.js";
 import type { OpenClawConfig } from "../config/config.js";
-import { readJsonBodyWithLimit, requestBodyErrorToText } from "../infra/http-body.js";
+import {
+  readJsonBodyWithLimit,
+  readRequestBodyWithLimit,
+  requestBodyErrorToText,
+} from "../infra/http-body.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import { normalizeMessageChannel } from "../utils/message-channel.js";
 import { type HookMappingResolved, resolveHookMappings } from "./hooks-mapping.js";
@@ -192,6 +197,35 @@ export async function readJsonBody(
   req: IncomingMessage,
   maxBytes: number,
 ): Promise<{ ok: true; value: unknown } | { ok: false; error: string }> {
+  const contentType = (req.headers["content-type"] ?? "").toLowerCase();
+
+  // Handle form-encoded bodies (e.g. Twilio webhooks)
+  if (contentType.includes("application/x-www-form-urlencoded")) {
+    try {
+      const raw = await readRequestBodyWithLimit(req, { maxBytes });
+      const params = new URLSearchParams(raw);
+      const obj: Record<string, string> = {};
+      for (const [key, value] of params) {
+        obj[key] = value;
+      }
+      return { ok: true, value: obj };
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "code" in err) {
+        const code = (err as { code: string }).code;
+        if (code === "PAYLOAD_TOO_LARGE") {
+          return { ok: false, error: "payload too large" };
+        }
+        if (code === "REQUEST_BODY_TIMEOUT") {
+          return { ok: false, error: "request body timeout" };
+        }
+        if (code === "CONNECTION_CLOSED") {
+          return { ok: false, error: requestBodyErrorToText("CONNECTION_CLOSED") };
+        }
+      }
+      return { ok: false, error: "invalid form body" };
+    }
+  }
+
   const result = await readJsonBodyWithLimit(req, { maxBytes, emptyObjectOnEmpty: true });
   if (result.ok) {
     return result;
