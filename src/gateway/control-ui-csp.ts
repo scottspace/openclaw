@@ -10,6 +10,7 @@ export function buildControlUiCspHeader(): string {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self'",
-    "connect-src 'self' ws: wss:",
+    "connect-src 'self' ws: wss: https://api.elevenlabs.io https://api.deepgram.com",
+    "media-src 'self' blob:",
   ].join("; ");
 }

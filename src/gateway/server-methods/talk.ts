@@ -102,6 +102,13 @@ export const talkHandlers: GatewayRequestHandlers = {
       configPayload.ui = { seamColor };
     }
 
+    if (includeSecrets) {
+      const deepgramKey = process.env.DEEPGRAM_API_KEY?.trim();
+      if (deepgramKey) {
+        configPayload.deepgram = { apiKey: deepgramKey };
+      }
+    }
+
     respond(true, { config: configPayload }, undefined);
   },
   "talk.mode": ({ params, respond, context, client, isWebchatConnect }) => {
