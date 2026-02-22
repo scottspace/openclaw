@@ -164,6 +164,20 @@ export function extractHookToken(req: IncomingMessage): string | undefined {
       return token;
     }
   }
+  if (auth.toLowerCase().startsWith("basic ")) {
+    try {
+      const decoded = Buffer.from(auth.slice(6).trim(), "base64").toString("utf-8");
+      const colonIdx = decoded.indexOf(":");
+      if (colonIdx > 0) {
+        const password = decoded.slice(colonIdx + 1).trim();
+        if (password) {
+          return password;
+        }
+      }
+    } catch {
+      // ignore malformed base64
+    }
+  }
   const headerToken =
     typeof req.headers["x-openclaw-token"] === "string"
       ? req.headers["x-openclaw-token"].trim()
